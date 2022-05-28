@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="./css/style.css">
+</head>
+
+<body>
+    <header>
+        <h1>DAISY Pipeline</h1>
+        <div id="status">Pipeline service: <span></span></div>
+    </header>
+    <main>
+        
+        <div role="tablist" id="tabs">
+            <button id="start" tab-index="0" aria-selected="true" role="tab" data-jobid="start">Start</button>
+        </div>
+        <div role="tabpanel" aria-labelledby="start" tab-index="0" class="selected" data-jobid="start">
+            <h2>Create a new job</h2>
+            <p style="font-style: italic; background-color: lightgoldenrodyellow; padding: .5rem">Here is where the user would select a script, choose files, and set options; but for now, just push the button.</p>
+            <div class="new-job-parameters">
+                <div>
+                    <span>Select a script to run:</span>
+                    <select disabled>
+                        <option>DAISY 2.02 to EPUB 3</option>
+                    </select>
+                </div>
+                
+                
+                <input type="file" disabled>
+                <button id="run-job">Run predetermined job</button>
+            </div>
+            
+        </div>
+    </main>
+
+</body>
+<script type="module">
+    import * as jobsDisplay from './js/jobsDisplay.js';
+    import * as statusDisplay from './js/statusDisplay.js';
+    import {displayTab} from './js/tabs.js';
+
+    let isAlive = false;
+    let updateState = async () => {
+        try {
+            let isAlive = await window.__TAURI__.invoke('is_pipeline_alive');      
+            await statusDisplay.update(isAlive);
+            let jobsXmlString = await window.__TAURI__.invoke('get_jobs');
+            await jobsDisplay.update(jobsXmlString, 
+                async jobid => {
+                    // console.log("Getting data for job", jobhref);
+                    let jobXml = await window.__TAURI__.invoke('get_job', {id: jobid});
+                    return jobXml;
+                },
+                async jobid => {
+                    console.log("Deleting job", jobid);
+                    await window.__TAURI__.invoke("delete_job", {id: jobid});
+                }
+            );
+        }
+        catch (e) {
+            console.error("Update state error", e);
+        }
+        
+    };
+
+    await updateState();
+
+    // use a worker to monitor the pipeline "alive" status
+    let w = new Worker("./js/webWorker.js");
+    // get the initial pipeline "alive" status and start the web worker polling cycle
+    w.postMessage("START_TIMER");
+    w.onmessage = async e => {
+        if (e.data == "TIMER_EVENT") {
+            await updateState();
+            w.postMessage("START_TIMER");
+        }
+    };
+    window.onbeforeunload = e => {
+        console.log("onbeforeunload");
+         w.terminate();
+    }
+
+    document.querySelector("#run-job").addEventListener('click', async e => {
+        let result = await window.__TAURI__.invoke('run_predetermined_job');
+        if (!result) {
+            console.log("Could not run job");
+        }
+        else {
+            console.log("Submitted job");
+        }
+    });
+
+
+    document.querySelector("#start").addEventListener('click', async e => {
+        displayTab(e.currentTarget);
+    });
+
+    document.querySelector("#job-1234").addEventListener('click', async e => {
+        displayTab(e.currentTarget);
+    });
+    
+    
+
+</script>
+
+</html>

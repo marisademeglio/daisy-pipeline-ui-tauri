@@ -1,0 +1,189 @@
+:root {
+    --button-hover: rgba(211, 211, 211, .5);
+    --button: lightgray;
+    --selected-hover: rgba(0, 0, 255, .8);
+    --selected: blue;
+    --darkgray: rgb(87, 87, 87);
+}
+html {
+    height: 100%;
+}
+body {
+    height: 100%;
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    font-family: Arial, Helvetica, sans-serif;
+    gap: 2rem;
+    font-size: 1.2em;
+}
+header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+main {
+    height: 100%;
+}
+header h1 {
+    margin: 0;
+}
+#tabs {
+    display: flex;
+    flex-direction: row;
+    gap: .5rem;
+}
+button[role=tab] {
+    font-size: 65%;
+    width: 10rem;
+    height: minmax(4rem, min-content);
+    font-size: 120%;
+    cursor: pointer;
+    background-color: transparent;
+    border: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: .25rem;
+    
+}   
+
+button[role=tab][aria-selected=true] {
+    background-color: transparent;
+    cursor: default;
+    border: thin darkgray solid;
+    color: var(--selected);
+    border-bottom: thin #fff solid;
+    margin-bottom: -1px;
+}
+
+button[role=tab][aria-selected=false]:hover {
+    text-decoration: underline;
+    text-decoration-thickness: 4px;
+    color: var(--selected-hover);
+}
+button[role=tab] span {
+    font-size: 80%;
+    display: block;
+}
+button[role=tab] span.job-status {
+    font-style: italic;
+    font-variant: small-caps;
+}
+div[role=tabpanel] {
+    border: thin darkgray solid;
+    height: calc(100% - 7rem);
+    padding: 1rem;
+    flex-basis: 1;
+    display: none; /* hide by default */
+    overflow-y: scroll;
+}
+div[role=tabpanel].selected {
+    display: block;
+}
+div[role=tabpanel] ul.status {
+    list-style-type: none;
+    width: 100%;
+    padding-left: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+div[role=tabpanel] ul.status > li {
+    display: flex;
+    flex-direction: column;
+    flex-wrap:wrap;
+    border-radius: 4px;
+    border: thin var(--darkgray) solid;
+}
+div[role=tabpanel] ul.status > li span {
+    display: block;
+}
+div[role=tabpanel] ul.status > li span:first-child {
+    background-color: var(--darkgray);
+    color: white;
+    font-weight: bold;
+    padding-left: 0.5rem;
+}
+div[role=tabpanel] ul.status > li span:last-child {
+    padding-left: 1rem;
+}
+button[role=tab] span.SUCCESS::after {
+    content: '🥳';
+}
+[role=tab] span.ERROR::after {
+    content: '😖';
+}
+[role=tab] span.RUNNING::after {
+    content: '⏳';
+}
+#status {
+    font-size: 75%;
+}
+#status span::after {
+    font-size: x-small;
+    text-align: center;
+    vertical-align: middle;
+    margin-left: .25rem;
+}
+#status span.offline::after {
+    content: '🔴';
+}
+#status span.available::after {
+    content: '🟢';
+}
+.new-job-parameters {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+[role=tabpanel] input, [role=tabpanel] select{
+    font-size: 120%;
+}
+[role=tabpanel] button {
+    font-size: 120%;
+    width: min-content;
+    white-space: nowrap;
+    padding: .5rem;
+    background-color: var(--button);
+    border: none;
+    
+}
+[role=tabpanel] button:hover {
+    background-color: var(--button-hover);
+}
+
+/* scroll container */
+.messages-container {
+    overflow: auto;
+    max-height: 30vh;
+}
+
+.messages-container:focus {
+    outline: .1em solid rgba(0,0,0,.1);
+}
+
+.messages-container ul {
+    list-style-type: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 80%;
+}
+
+.messages-container h3 {
+    position: sticky;
+    top: 0;
+    background: white;
+}
+
+.delete-job {
+    color: red;
+}
+.delete-job::after {
+    content: '🗑';
+}

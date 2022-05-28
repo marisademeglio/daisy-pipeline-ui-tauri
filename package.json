@@ -1,0 +1,19 @@
+{
+  "name": "tauri-app",
+  "scripts": {
+    "serve-ui": "live-server public --port=5555 --no-browser --cors localhost",
+    "dev": "tauri dev",
+    "update": "tauri deps update",
+    "build": "tauri build"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^1.0.0-rc.6"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^1.0.0-rc.12",
+    "live-server": "^1.1.0"
+  },
+  "settings": {
+    "pipelinePath": "daisy-pipeline/bin/pipeline2"
+  }
+}

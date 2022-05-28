@@ -1,0 +1,6 @@
+node_modules
+.DS_Store
+daisy-pipeline/data/db/**
+daisy-pipeline/data/log/**
+daisy-pipeline/data/jobs/**
+src-tauri/target
