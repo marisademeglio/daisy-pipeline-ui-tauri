@@ -10,7 +10,20 @@ async function update(jobsXmlString, getJobDataFn, deleteJobFn) {
     let jobsIterator = xmldoc.evaluate("//ns:job", xmldoc.documentElement, nsResolver, XPathExpression.ANY_TYPE, null);
     let job = jobsIterator.iterateNext();
     while(job) {
-        await createOrUpdateJob(job.getAttribute("id"), getJobDataFn, deleteJobFn);
+        // if the job is done and the UI already has reported this as its status, don't update anything
+        let status = job.getAttribute("status");
+        let res = tabs.getTabAndTabPanel(job.getAttribute("id"));
+        let panel = res.panel;
+        let currentStatus = getStatusFromPanel(panel); // get the currently-displayed status
+        if (status != "RUNNING" && status == currentStatus) {
+            console.log("No change in job data, no need to update UI");
+        }
+        else {
+            await createOrUpdateJob(job.getAttribute("id"), getJobDataFn, deleteJobFn);
+        }
+        if (currentStatus != status && currentStatus != "") {
+            window.__TAURI__.notification.sendNotification({title: "Pipeline job", body: status});
+        }
         job = jobsIterator.iterateNext();
     }
 }
@@ -22,18 +35,18 @@ async function createOrUpdateJob(jobId, getJobDataFn, deleteJobFn) {
     let id = xmldoc.evaluate("//ns:job/@id", xmldoc.documentElement, nsResolver, XPathExpression.ANY_TYPE, null).iterateNext().nodeValue;
     
     // see if this job exists in our UI yet
-    let res = getJobDisplay(id);
+    let res = tabs.getTabAndTabPanel(id);
     let tab = res.tab;
     let panel = res.panel;
 
     // if not, create it
     if (!tab || !panel) {
-        console.log(tab);
-        console.log(panel);
+        console.log("Creating tab for job");
         res = tabs.addTab(id);
         tab = res.tab;
         panel = res.panel;
     }
+    
     let status = xmldoc.evaluate("//ns:job/@status", xmldoc.documentElement, nsResolver, XPathExpression.ANY_TYPE, null).iterateNext().nodeValue;
     let name = xmldoc.evaluate("//ns:script/ns:nicename/text()", xmldoc.documentElement, nsResolver, XPathExpression.ANY_TYPE, null).iterateNext().nodeValue;
     
@@ -47,14 +60,6 @@ async function createOrUpdateJob(jobId, getJobDataFn, deleteJobFn) {
     while (msg) {
         messages.push(msg.nodeValue);
         msg = messagesIt.iterateNext();
-    }
-
-    // if the job is done and the UI already has reported this as its status, don't update anything
-    if (status == "SUCCESS" || status == "ERROR") {
-        if (tab.querySelector(`.${status}`)) {
-            console.log("job is done, no need to update UI");
-            return;
-        }
     }
     
     tab.innerHTML = `
@@ -93,28 +98,39 @@ async function createOrUpdateJob(jobId, getJobDataFn, deleteJobFn) {
         panel.querySelector("button.delete-job").addEventListener('click', async e => {
             await deleteJobFn(id);
 
-            // what's the next tab
+            // focus on the next tab
             let nextTab = tab.nextElementSibling;
             if (!nextTab) {
                 nextTab = document.querySelector("#start");
             }
             tab.remove();
             panel.remove();
-            tabs.displayTab(nextTab);
-            
+            tabs.selectTab(nextTab);
         });
     }
-
 }
-function getJobDisplay(id) {
-    let tab, panel;    
-    tab = document.querySelector(`#job-${id}`);
-    if (tab) {
-        panel = tabs.getTabPanel(id);
+
+function getStatusFromPanel(panel) {
+    if (!panel) return "";
+
+    let statusElement = panel.querySelector(".job-status");
+    if (!statusElement) {
+        return "";
+    }
+    if (statusElement.classList.contains("RUNNING")) {
+        return "RUNNING"
+    }
+    else if (statusElement.classList.contains("IDLE")) {
+        return "IDLE";
+    }
+    else if (statusElement.classList.contains("ERROR")) {
+        return "ERROR";
+    }
+    else if (statusElement.classList.contains("SUCCESS")) {
+        return "SUCCESS";
     }
     else {
-        console.log(`Job ${id} not found`);
+        return "";
     }
-    return {tab, panel};
 }
 export { update };

@@ -134,7 +134,7 @@ button[role=tab] span.SUCCESS::after {
 #status span.available::after {
     content: '🟢';
 }
-.new-job-parameters {
+fieldset {
     display: flex;
     flex-direction: column;
     gap: 2rem;

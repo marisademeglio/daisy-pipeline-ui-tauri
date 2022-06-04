@@ -6,6 +6,6 @@ onmessage = e => {
     if (e.data == "START_TIMER") {
         setTimeout(() => {
             postMessage("TIMER_EVENT");
-        }, 2000);   
+        }, 1000);   
     }
 };

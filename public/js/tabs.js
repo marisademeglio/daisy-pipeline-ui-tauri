@@ -5,7 +5,7 @@ let getAllTabs = () => Array.from(document.querySelectorAll("button[role=tab]"))
 let getAllTabPanels = () => Array.from(document.querySelectorAll("div[role=tabpanel]"));
 
 // select one tab and deselect all the others
-function displayTab(tabElement) {
+function selectTab(tabElement) {
     // use aria-selected=true/false on the button
     // and class=selected on the corresponding panel
     console.log(`Selecting tab ${tabElement.id}`);
@@ -37,17 +37,23 @@ function addTab(id) {
     document.querySelector("#tabs").appendChild(tabElement);
     document.querySelector("main").appendChild(panelElement);
     tabElement.addEventListener('click', e => {
-        displayTab(tabElement);
+        selectTab(tabElement);
     });
     return {tab: tabElement, panel: panelElement};
 }
 
-function getTabPanel(jobid) {
+function getTabAndTabPanel(jobid) {
     // first get the tab for the job
     let tab = document.querySelector(`button[role=tab][data-jobid='${jobid}']`);
     // then get the panel that is labelled by that button
-    let panel = document.querySelector(`div[role=tabpanel][aria-labelledby='${tab.id}']`)
-    return panel;
+    if (tab) {
+        let panel = document.querySelector(`div[role=tabpanel][aria-labelledby='${tab.id}']`)
+        return {tab, panel};
+    }
+    else {
+        return {tab: null, panel: null};
+    }
+    
 }
 
-export { displayTab, addTab, removeTab, getTabPanel };
+export { selectTab, addTab, getTabAndTabPanel };
