@@ -68,9 +68,6 @@ fn main() {
         // Application is ready (triggered only once)
         RunEvent::Ready => {
             println!("RunEvent::Ready");
-            let app_handle = app_handle.clone();
-            let window = app_handle.get_window("main").unwrap();
-            window.set_title("DAISY Pipeline").unwrap();
         }
 
         // Triggered when a window is trying to close

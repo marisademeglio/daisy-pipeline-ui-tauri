@@ -1,4 +1,4 @@
-use tauri::{App, CustomMenuItem, Menu, Submenu};
+use tauri::{AppHandle, CustomMenuItem, Menu, Submenu, Manager};
 use minidom::Element;
 
 #[path = "pipeline_api.rs"] mod pipeline_api;
@@ -20,10 +20,12 @@ pub fn build_menu() -> Menu {
     return menu;
 }
 
-// resp is an XML string response from the pipeline endpoint /jobs
-pub async fn populate_history_menu(resp: String, app_handle: tauri::AppHandle) {
+// jobs_xml is an XML string response from the pipeline endpoint /jobs
+pub async fn populate_history_menu(jobs_xml: String, app_handle: AppHandle) {
+    println!("populate history menu");
+
     const NS: &'static str = "http://www.daisy.org/ns/pipeline/data";
-   let root: Element = match resp.parse() {
+    let root: Element = match jobs_xml.parse::<Element>() {
         Ok(root) => {
             root
         },
@@ -39,7 +41,10 @@ pub async fn populate_history_menu(resp: String, app_handle: tauri::AppHandle) {
         let job_resp_root: Element = job_resp.parse().unwrap();
         let script = job_resp_root.get_child("script", NS).unwrap();
         let nicename = script.get_child("nicename", NS).unwrap().text();
-        app_handle.get_window(("main_window"));
+
+        // how to get a submenu ?
+        //let history_menu = app_handle.get_window("main").unwrap().menu_handle();
+        
     }
     // TODO how to get the app or main_window from here?
 }

@@ -13,9 +13,9 @@ pub async fn run_predetermined_job() -> bool {
 }
 
 #[tauri::command]
-pub async fn get_jobs() -> String {
+pub async fn get_jobs(app_handle: tauri::AppHandle) -> String {
     let resp = pipeline_api::get_jobs().await;
-    menus::populate_history_menu(resp.clone()).await;
+    menus::populate_history_menu(resp.clone(), app_handle).await;
     return resp;
 }
 #[tauri::command]
