@@ -51,7 +51,7 @@ fn main() {
                 "custom_quit" => {
                     println!("Menu quit");
                     tauri::async_runtime::spawn(async move {
-                        do_exit().await;
+                        do_exit(event.window().app_handle()).await;
                     });
                 },
                 "history" => {
@@ -83,9 +83,8 @@ fn main() {
             let app_handle = app_handle.clone();
             let _window = app_handle.get_window(&label).unwrap();
             tauri::async_runtime::spawn(async move {
-                do_exit().await;
+                do_exit(app_handle).await;
             });
-            
         }
 
         _ => {}
@@ -93,13 +92,9 @@ fn main() {
 }
 
 
-async fn do_exit() { //app_handle: tauri::AppHandle) {
+async fn do_exit(app_handle: tauri::AppHandle) {
     println!("Do exit");
     // this is where we would warn people if they try to quit and there are still jobs running
     pipeline_api::halt().await;
-    
-    // it would be nice to call this in case it does anything valuable behind the scenes
-    // but how to get the app_handle from menu event trigger (one of the source events for exiting is the Quit menu item)
-    // app_handle.exit(0);
-    std::process::exit(0);
+    app_handle.exit(0);
 }
