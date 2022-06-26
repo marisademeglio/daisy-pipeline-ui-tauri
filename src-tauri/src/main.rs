@@ -7,17 +7,19 @@ use std::env;
 use dotenv;
 use tauri::{
     Manager,
-    RunEvent, WindowEvent
+    RunEvent, WindowEvent, State
   };
 
-
-mod commands;
-mod pipeline_api;
 mod menus;
+mod pipeline_api;
+mod real_pipeline_api;
+mod mock_store;
+mod mock_pipeline_api;
+mod error;
 
 fn main() {
     dotenv::dotenv().ok();
-    let menu = menus::build_menu();
+    let menu = menus::build_menu(None);
     let app = tauri::Builder::default()
         .setup(|app| {
             let splashscreen_window = app.get_window("splashscreen").unwrap();
@@ -39,12 +41,6 @@ fn main() {
             });
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![
-            commands::is_pipeline_alive, 
-            commands::run_predetermined_job,
-            commands::get_jobs, 
-            commands::get_job,
-            commands::delete_job])
         .menu(menu)
         .on_menu_event(|event| {
             match event.menu_item_id() {
@@ -61,6 +57,14 @@ fn main() {
                 _ => {println!("Menu {}", event.menu_item_id())}
             }
         })
+        .manage(mock_store::Jobs(Default::default()))
+        .invoke_handler(tauri::generate_handler![
+            is_pipeline_alive, 
+            run_predetermined_job,
+            get_jobs, 
+            get_job,
+            delete_job
+        ])    
         .build(tauri::generate_context!())
         .expect("error while building tauri application");
     
@@ -94,4 +98,35 @@ async fn do_exit(app_handle: tauri::AppHandle) {
     // this is where we would warn people if they try to quit and there are still jobs running
     pipeline_api::halt().await;
     app_handle.exit(0);
+}
+
+// reminder: this issue comes up with async [command]s https://github.com/tauri-apps/tauri/issues/2533
+#[tauri::command]
+async fn is_pipeline_alive() -> Result<bool, String> {
+    let is_alive = pipeline_api::is_alive().await;
+    Ok(is_alive)
+}
+#[tauri::command]
+async fn run_predetermined_job(jobs: State<'_, mock_store::Jobs>) -> Result<bool, String> {
+    let success = pipeline_api::run_job_demo(jobs).await;
+    Ok(success)
+}
+
+#[tauri::command]
+async fn get_jobs(app_handle: tauri::AppHandle, jobs: State<'_, mock_store::Jobs>) -> Result<String, String> {
+    let resp = pipeline_api::get_jobs(jobs.clone()).await;
+    menus::update_menus(resp.clone(), app_handle, jobs).await;
+    Ok(resp)
+}
+
+#[tauri::command]
+async fn get_job(id: String, jobs: State<'_, mock_store::Jobs>) -> Result<String, String> {
+    let resp = pipeline_api::get_job(id, jobs).await;
+    Ok(resp)
+}
+
+#[tauri::command]
+async fn delete_job(id: String, jobs: State<'_, mock_store::Jobs>) -> Result<bool, String> {
+    let resp = pipeline_api::delete_job(id, jobs).await;
+    Ok(resp)
 }

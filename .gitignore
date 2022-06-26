@@ -3,4 +3,4 @@ node_modules
 daisy-pipeline/data/db/**
 daisy-pipeline/data/log/**
 daisy-pipeline/data/jobs/**
-src-tauri/target
+src-tauri/target/**
