@@ -12,9 +12,6 @@ use tauri::{
 
 mod menus;
 mod pipeline_api;
-mod real_pipeline_api;
-mod mock_store;
-mod mock_pipeline_api;
 mod error;
 
 fn main() {
@@ -57,7 +54,6 @@ fn main() {
                 _ => {println!("Menu {}", event.menu_item_id())}
             }
         })
-        .manage(mock_store::Jobs(Default::default()))
         .invoke_handler(tauri::generate_handler![
             is_pipeline_alive, 
             run_predetermined_job,
@@ -107,26 +103,26 @@ async fn is_pipeline_alive() -> Result<bool, String> {
     Ok(is_alive)
 }
 #[tauri::command]
-async fn run_predetermined_job(jobs: State<'_, mock_store::Jobs>) -> Result<bool, String> {
-    let success = pipeline_api::run_job_demo(jobs).await;
+async fn run_predetermined_job() -> Result<bool, String> {
+    let success = pipeline_api::run_job_demo().await;
     Ok(success)
 }
 
 #[tauri::command]
-async fn get_jobs(app_handle: tauri::AppHandle, jobs: State<'_, mock_store::Jobs>) -> Result<String, String> {
-    let resp = pipeline_api::get_jobs(jobs.clone()).await;
-    menus::update_menus(resp.clone(), app_handle, jobs).await;
+async fn get_jobs(app_handle: tauri::AppHandle) -> Result<String, String> {
+    let resp = pipeline_api::get_jobs().await;
+    menus::update_menus(resp.clone(), app_handle).await;
     Ok(resp)
 }
 
 #[tauri::command]
-async fn get_job(id: String, jobs: State<'_, mock_store::Jobs>) -> Result<String, String> {
-    let resp = pipeline_api::get_job(id, jobs).await;
+async fn get_job(id: String) -> Result<String, String> {
+    let resp = pipeline_api::get_job(id).await;
     Ok(resp)
 }
 
 #[tauri::command]
-async fn delete_job(id: String, jobs: State<'_, mock_store::Jobs>) -> Result<bool, String> {
-    let resp = pipeline_api::delete_job(id, jobs).await;
+async fn delete_job(id: String) -> Result<bool, String> {
+    let resp = pipeline_api::delete_job(id).await;
     Ok(resp)
 }

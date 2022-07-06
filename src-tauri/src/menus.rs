@@ -1,7 +1,6 @@
 use tauri::{AppHandle, CustomMenuItem, Menu, Submenu, State};
 use minidom::Element;
 use crate::pipeline_api;
-use crate::mock_store;
 
 pub struct JobMenuItem {
     id: String,
@@ -33,7 +32,7 @@ pub fn build_menu(history_list: Option<Vec<JobMenuItem>>) -> Menu {
 }
 
 // jobs_xml is an XML string response from the pipeline endpoint /jobs
-pub async fn update_menus(jobs_xml: String, app_handle: AppHandle, jobs: State<'_, mock_store::Jobs>) {
+pub async fn update_menus(jobs_xml: String, app_handle: AppHandle) {
     println!("populate history menu");
 
     const NS: &'static str = "http://www.daisy.org/ns/pipeline/data";
@@ -41,7 +40,7 @@ pub async fn update_menus(jobs_xml: String, app_handle: AppHandle, jobs: State<'
         Ok(root) => {
             root
         },
-        Err(e) => {
+        Err(_e) => {
             // this error will happen a few times at the start, 
             // before the pipeline service has been started
             return;
@@ -50,7 +49,7 @@ pub async fn update_menus(jobs_xml: String, app_handle: AppHandle, jobs: State<'
     let mut history_list: Vec<JobMenuItem> = Vec::new();
     for child in root.children() {
         let id = child.attr("id").unwrap().to_string();
-        let job_resp = pipeline_api::get_job(id.clone(), jobs.clone()).await;
+        let job_resp = pipeline_api::get_job(id.clone()).await;
         let job_resp_root: Element = job_resp.parse().unwrap();
         let script = job_resp_root.get_child("script", NS).unwrap();
         let nicename = script.get_child("nicename", NS).unwrap().text();
