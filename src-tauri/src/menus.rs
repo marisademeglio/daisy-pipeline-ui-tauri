@@ -26,28 +26,31 @@ pub fn build_menu(history_list: Option<Vec<JobMenuItem>>) -> Menu {
 
     let menu = Menu::new()
         .add_submenu(app_submenu)
-        .add_submenu(history_submenu);
+        // .add_submenu(history_submenu)
+        ;
     return menu;
 }
 
-pub async fn update_menus(jobs: String, app_handle: AppHandle) {
+pub fn update_menus(jobs: String, app_handle: AppHandle) {
     println!("populate history menu");
 
-    const NS: &'static str = "http://www.daisy.org/ns/pipeline/data";
     
     let mut history_list: Vec<JobMenuItem> = Vec::new();
-    // for child in jobs.children() {
-    //     let id = child.attr("id").unwrap().to_string();
-    //     let job_resp = pipeline_api::get_job(id.clone()).await;
-    //     let job_resp_root: Element = job_resp.parse().unwrap();
-    //     let script = job_resp_root.get_child("script", NS).unwrap();
-    //     let nicename = script.get_child("nicename", NS).unwrap().text();
-    //     let history_menu_item = JobMenuItem { id: id, label: nicename};
-    //     history_list.push(history_menu_item);        
-    // }
+    let json: Vec<serde_json::Value> =
+        serde_json::from_str(jobs.as_str()).unwrap();
+    // println!("{}", json);
+    for item in json {
+        let id = &item["id"];
+        let script = &item["scriptName"];
+        let history_menu_item = JobMenuItem{id: id.to_string(), label: script.to_string()};
+        history_list.push(history_menu_item);
+    }
     
     // basically build a new menu and attach it to the app
     let updated_menu = build_menu(Some(history_list));
-    // TODO how to attach it
+
+    // TODO attach it to the window
+    // let main_window = app_handle.get_window("main").unwrap();
+    //   let menu_handle = main_window.menu_handle();
     
 }

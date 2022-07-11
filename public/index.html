@@ -10,7 +10,7 @@
     </header>
     <main>
         <ul role="tablist" id="tabs">
-            <li id="start" tab-index="0" aria-selected="true" role="tab" data-jobid="start"><button><span>Start</span></button></li>
+            <li id="start" tab-index="0" aria-selected="true" role="tab" data-jobid="start"><button class="tab-contents"><span>Start</span></button></li>
         </ul>
         <div role="tabpanel" aria-labelledby="start" tab-index="0" class="selected">
             <h2>Create a new job</h2>
@@ -63,7 +63,7 @@
         let newJob = jobsList.addJob(scriptName);
         jobRunner.runJob(newJob);
         jobsDisplay.update();
-        window.__TAURI__.invoke('update_menu', jobsList.getJobs());
+        window.__TAURI__.invoke('update_menu', {jobs: JSON.stringify(jobsList.getJobs())});
     });
 
 

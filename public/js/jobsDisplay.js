@@ -40,11 +40,13 @@ function updateJob(jobId) {
     }
     
     tab.innerHTML = `
-    <div class="tab-contents">
+    <button class="tab-contents">
         <span class="job-name">${job.scriptName}</span>
         <span class="job-status ${job.status}">${job.status.toLowerCase()}</span>
-    </div>
-    ${job.status != 'RUNNING' ? `<button class="close-tab" title="Close tab">x</button>` : ``}`;
+    </button>`;
+    // this is preferable to the "close tab" button in the tab's panel
+    // but it doesn't seem accessible
+    // ${job.status != 'RUNNING' ? `<button class="close-tab" title="Close tab">x</button>` : ``}`;
 
     panel.innerHTML = `
     <h2>${job.scriptName}</h2>
@@ -59,10 +61,11 @@ function updateJob(jobId) {
         </li>
         <li>
             <span>Result</span>
-            <span>${job.result}</span>
+            <span>${job.results != "" ? job.results : "Pending"}</span>
         </li>
     </ul>
     
+    ${job.status != 'RUNNING' ? `<button class="close-tab">Close Tab</button>` : ``}
     ${job.status != 'RUNNING' ? `<button class="delete-job">Delete job</button>` : ``}
 
     <div role="region" aria-labelledby="messages" tabindex="0" class="messages-container">
@@ -91,7 +94,7 @@ function updateJob(jobId) {
             jobsList.removeJob(job.id);
             closeTab(tab);
         });
-        tab.querySelector("button.close-tab").addEventListener('click', e => {
+        panel.querySelector("button.close-tab").addEventListener('click', e => {
             closeTab(tab);
             jobsList.updateJobDisplayed(job.id, false);
             e.stopPropagation(); 

@@ -20,7 +20,7 @@ function addJob(scriptName) {
         id: crypto.randomUUID(),
         scriptName,
         status: "RUNNING",
-        results: null,
+        results: "",
         messages: [],
         displayed: true
     };
@@ -40,6 +40,9 @@ function getJob(id) {
 function updateJobStatus(jobId, status) {
     let job = jobs.find(j => j.id == jobId);
     job.status = status;
+    if (status == "SUCCESS") {
+        job.results = "file:///path/to/output";
+    }
     return job;
 }
 function addMessageToJob(jobId, message) {

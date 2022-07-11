@@ -61,7 +61,7 @@ li[role=tab] button.close-tab {
 li[role=tab] button.close-tab:hover {
     background-color: lightgray;
 }
-li[role=tab] div.tab-contents {
+li[role=tab] .tab-contents {
     text-align: center;
     padding: .5rem;
 }
@@ -74,7 +74,7 @@ li[role=tab][aria-selected=true] {
     margin-bottom: -1px;
 }
 
-li[role=tab][aria-selected=false] div.tab-contents:hover {
+li[role=tab][aria-selected=false] .tab-contents:hover {
     text-decoration: underline;
     text-decoration-thickness: 4px;
     color: var(--selected-hover);
@@ -124,15 +124,6 @@ div[role=tabpanel] ul.status > li span:first-child {
 }
 div[role=tabpanel] ul.status > li span:last-child {
     padding-left: 1rem;
-}
-li[role=tab] span.SUCCESS::after {
-    content: '🥳';
-}
-[role=tab] span.ERROR::after {
-    content: '😖';
-}
-[role=tab] span.RUNNING::after {
-    content: '⏳';
 }
 #status {
     font-size: 75%;
@@ -200,7 +191,7 @@ fieldset {
     color: red;
 }
 .delete-job::after {
-    content: '🗑';
+    /* content: '🗑'; */
 }
 #start {
     align-items: center;

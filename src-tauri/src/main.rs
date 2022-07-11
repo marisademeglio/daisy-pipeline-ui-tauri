@@ -70,38 +70,8 @@ async fn do_exit(app_handle: tauri::AppHandle) {
 
 // reminder: this issue comes up with async [command]s https://github.com/tauri-apps/tauri/issues/2533
 #[tauri::command]
-async fn update_menu(app_handle: tauri::AppHandle) -> Result<bool, String> {
-    
+async fn update_menu(app_handle: tauri::AppHandle, jobs: String) -> Result<bool, String> {
+    menus::update_menus(jobs, app_handle);
     Ok(true)
 }
 
-// // reminder: this issue comes up with async [command]s https://github.com/tauri-apps/tauri/issues/2533
-// #[tauri::command]
-// async fn is_pipeline_alive() -> Result<bool, String> {
-//     let is_alive = pipeline_api::is_alive().await;
-//     Ok(is_alive)
-// }
-// #[tauri::command]
-// async fn run_predetermined_job() -> Result<bool, String> {
-//     let success = pipeline_api::run_job_demo().await;
-//     Ok(success)
-// }
-
-// #[tauri::command]
-// async fn get_jobs(app_handle: tauri::AppHandle) -> Result<String, String> {
-//     let resp = pipeline_api::get_jobs().await;
-//     menus::update_menus(resp.clone(), app_handle).await;
-//     Ok(resp)
-// }
-
-// #[tauri::command]
-// async fn get_job(id: String) -> Result<String, String> {
-//     let resp = pipeline_api::get_job(id).await;
-//     Ok(resp)
-// }
-
-// #[tauri::command]
-// async fn delete_job(id: String) -> Result<bool, String> {
-//     let resp = pipeline_api::delete_job(id).await;
-//     Ok(resp)
-// }
