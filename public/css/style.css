@@ -33,24 +33,39 @@ header h1 {
     display: flex;
     flex-direction: row;
     gap: .5rem;
+    padding: 0;
+    margin-bottom: 0;
 }
-button[role=tab] {
+li[role=tab] {
     font-size: 65%;
     width: 10rem;
-    height: minmax(4rem, min-content);
+    height: 5rem;
     font-size: 120%;
     cursor: pointer;
     background-color: transparent;
     border: none;
     display: flex;
-    flex-direction: column;
-    align-items: center;
+    flex-direction: row;
+    align-items: start;
     justify-content: center;
     gap: .25rem;
     
 }   
-
-button[role=tab][aria-selected=true] {
+li[role=tab] button {
+    border: none;
+    background-color: transparent;
+}
+li[role=tab] button.close-tab {
+    align-self: top;
+}
+li[role=tab] button.close-tab:hover {
+    background-color: lightgray;
+}
+li[role=tab] div.tab-contents {
+    text-align: center;
+    padding: .5rem;
+}
+li[role=tab][aria-selected=true] {
     background-color: transparent;
     cursor: default;
     border: thin darkgray solid;
@@ -59,16 +74,16 @@ button[role=tab][aria-selected=true] {
     margin-bottom: -1px;
 }
 
-button[role=tab][aria-selected=false]:hover {
+li[role=tab][aria-selected=false] div.tab-contents:hover {
     text-decoration: underline;
     text-decoration-thickness: 4px;
     color: var(--selected-hover);
 }
-button[role=tab] span {
-    font-size: 80%;
+li[role=tab] span {
+    font-size: 1rem;
     display: block;
 }
-button[role=tab] span.job-status {
+li[role=tab] span.job-status {
     font-style: italic;
     font-variant: small-caps;
 }
@@ -110,7 +125,7 @@ div[role=tabpanel] ul.status > li span:first-child {
 div[role=tabpanel] ul.status > li span:last-child {
     padding-left: 1rem;
 }
-button[role=tab] span.SUCCESS::after {
+li[role=tab] span.SUCCESS::after {
     content: '🥳';
 }
 [role=tab] span.ERROR::after {
@@ -186,4 +201,7 @@ fieldset {
 }
 .delete-job::after {
     content: '🗑';
+}
+#start {
+    align-items: center;
 }

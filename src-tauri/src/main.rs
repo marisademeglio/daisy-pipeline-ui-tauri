@@ -3,41 +3,19 @@
     windows_subsystem = "windows"
 )]
 
-use std::env;
+use std::{env, thread, time};
 use dotenv;
 use tauri::{
     Manager,
-    RunEvent, WindowEvent, State
+    RunEvent, WindowEvent
   };
 
 mod menus;
-mod pipeline_api;
-mod error;
 
 fn main() {
     dotenv::dotenv().ok();
     let menu = menus::build_menu(None);
     let app = tauri::Builder::default()
-        .setup(|app| {
-            let splashscreen_window = app.get_window("splashscreen").unwrap();
-            let main_window = app.get_window("main").unwrap();
-            // we perform the initialization code on a new task so the app doesn't freeze
-            tauri::async_runtime::spawn(async move {
-               // start the pipeline
-                let is_alive = pipeline_api::is_alive().await;
-                if is_alive {
-                    println!("Pipeline is already running");
-                }
-                else {
-                    let _res = pipeline_api::start_pipeline().await;
-                }
-        
-                // After it's done, close the splashscreen and display the main window
-                splashscreen_window.close().unwrap();
-                main_window.show().unwrap();
-            });
-            Ok(())
-        })
         .menu(menu)
         .on_menu_event(|event| {
             match event.menu_item_id() {
@@ -55,11 +33,7 @@ fn main() {
             }
         })
         .invoke_handler(tauri::generate_handler![
-            is_pipeline_alive, 
-            run_predetermined_job,
-            get_jobs, 
-            get_job,
-            delete_job
+            update_menu
         ])    
         .build(tauri::generate_context!())
         .expect("error while building tauri application");
@@ -91,38 +65,43 @@ fn main() {
 
 async fn do_exit(app_handle: tauri::AppHandle) {
     println!("Do exit");
-    // this is where we would warn people if they try to quit and there are still jobs running
-    pipeline_api::halt().await;
     app_handle.exit(0);
 }
 
 // reminder: this issue comes up with async [command]s https://github.com/tauri-apps/tauri/issues/2533
 #[tauri::command]
-async fn is_pipeline_alive() -> Result<bool, String> {
-    let is_alive = pipeline_api::is_alive().await;
-    Ok(is_alive)
-}
-#[tauri::command]
-async fn run_predetermined_job() -> Result<bool, String> {
-    let success = pipeline_api::run_job_demo().await;
-    Ok(success)
+async fn update_menu(app_handle: tauri::AppHandle) -> Result<bool, String> {
+    
+    Ok(true)
 }
 
-#[tauri::command]
-async fn get_jobs(app_handle: tauri::AppHandle) -> Result<String, String> {
-    let resp = pipeline_api::get_jobs().await;
-    menus::update_menus(resp.clone(), app_handle).await;
-    Ok(resp)
-}
+// // reminder: this issue comes up with async [command]s https://github.com/tauri-apps/tauri/issues/2533
+// #[tauri::command]
+// async fn is_pipeline_alive() -> Result<bool, String> {
+//     let is_alive = pipeline_api::is_alive().await;
+//     Ok(is_alive)
+// }
+// #[tauri::command]
+// async fn run_predetermined_job() -> Result<bool, String> {
+//     let success = pipeline_api::run_job_demo().await;
+//     Ok(success)
+// }
 
-#[tauri::command]
-async fn get_job(id: String) -> Result<String, String> {
-    let resp = pipeline_api::get_job(id).await;
-    Ok(resp)
-}
+// #[tauri::command]
+// async fn get_jobs(app_handle: tauri::AppHandle) -> Result<String, String> {
+//     let resp = pipeline_api::get_jobs().await;
+//     menus::update_menus(resp.clone(), app_handle).await;
+//     Ok(resp)
+// }
 
-#[tauri::command]
-async fn delete_job(id: String) -> Result<bool, String> {
-    let resp = pipeline_api::delete_job(id).await;
-    Ok(resp)
-}
+// #[tauri::command]
+// async fn get_job(id: String) -> Result<String, String> {
+//     let resp = pipeline_api::get_job(id).await;
+//     Ok(resp)
+// }
+
+// #[tauri::command]
+// async fn delete_job(id: String) -> Result<bool, String> {
+//     let resp = pipeline_api::delete_job(id).await;
+//     Ok(resp)
+// }

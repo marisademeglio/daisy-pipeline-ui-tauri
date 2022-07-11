@@ -1,6 +1,5 @@
 use tauri::{AppHandle, CustomMenuItem, Menu, Submenu, State};
 use minidom::Element;
-use crate::pipeline_api;
 
 pub struct JobMenuItem {
     id: String,
@@ -31,31 +30,21 @@ pub fn build_menu(history_list: Option<Vec<JobMenuItem>>) -> Menu {
     return menu;
 }
 
-// jobs_xml is an XML string response from the pipeline endpoint /jobs
-pub async fn update_menus(jobs_xml: String, app_handle: AppHandle) {
+pub async fn update_menus(jobs: String, app_handle: AppHandle) {
     println!("populate history menu");
 
     const NS: &'static str = "http://www.daisy.org/ns/pipeline/data";
-    let root: Element = match jobs_xml.parse::<Element>() {
-        Ok(root) => {
-            root
-        },
-        Err(_e) => {
-            // this error will happen a few times at the start, 
-            // before the pipeline service has been started
-            return;
-        }
-    };
+    
     let mut history_list: Vec<JobMenuItem> = Vec::new();
-    for child in root.children() {
-        let id = child.attr("id").unwrap().to_string();
-        let job_resp = pipeline_api::get_job(id.clone()).await;
-        let job_resp_root: Element = job_resp.parse().unwrap();
-        let script = job_resp_root.get_child("script", NS).unwrap();
-        let nicename = script.get_child("nicename", NS).unwrap().text();
-        let history_menu_item = JobMenuItem { id: id, label: nicename};
-        history_list.push(history_menu_item);        
-    }
+    // for child in jobs.children() {
+    //     let id = child.attr("id").unwrap().to_string();
+    //     let job_resp = pipeline_api::get_job(id.clone()).await;
+    //     let job_resp_root: Element = job_resp.parse().unwrap();
+    //     let script = job_resp_root.get_child("script", NS).unwrap();
+    //     let nicename = script.get_child("nicename", NS).unwrap().text();
+    //     let history_menu_item = JobMenuItem { id: id, label: nicename};
+    //     history_list.push(history_menu_item);        
+    // }
     
     // basically build a new menu and attach it to the app
     let updated_menu = build_menu(Some(history_list));

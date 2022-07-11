@@ -1,113 +1,103 @@
 import * as tabs from './tabs.js';
+import * as jobsList from './jobsList.js';
 
-let nsResolver = () => 'http://www.daisy.org/ns/pipeline/data';
-
-async function update(jobsXmlString, getJobDataFn, deleteJobFn) {
-    // are there jobs running
-    const parser = new DOMParser();
-    const xmldoc = parser.parseFromString(jobsXmlString, "application/xml");
-    
-    let jobsIterator = xmldoc.evaluate("//ns:job", xmldoc.documentElement, nsResolver, XPathExpression.ANY_TYPE, null);
-    let job = jobsIterator.iterateNext();
-    while(job) {
-        // if the job is done and the UI already has reported this as its status, don't update anything
-        let status = job.getAttribute("status");
-        let res = tabs.getTabAndTabPanel(job.getAttribute("id"));
+function update() {
+    console.log("update");
+    let jobsData = jobsList.getJobs();
+    console.log(jobsData);
+    jobsData.filter(job => job.displayed).map(job => {
+        let status = job.status;
+        let res = tabs.getTabAndTabPanel(job.id);
         let panel = res.panel;
         let currentStatus = getStatusFromPanel(panel); // get the currently-displayed status
         if (status != "RUNNING" && status == currentStatus) {
             console.log("No change in job data, no need to update UI");
         }
         else {
-            await createOrUpdateJob(job.getAttribute("id"), getJobDataFn, deleteJobFn);
+            updateJob(job.id);
         }
         if (currentStatus != status && currentStatus != "") {
-            window.__TAURI__.notification.sendNotification({title: "Pipeline job", body: status});
+            console.log("Status change");
+            window.__TAURI__.notification.sendNotification({title: `Pipeline`, body: `${job.scriptName}: ${status}`});
         }
-        job = jobsIterator.iterateNext();
-    }
+    });
 }
-async function createOrUpdateJob(jobId, getJobDataFn, deleteJobFn) {
-    let jobXml = await getJobDataFn(jobId);
-    const parser = new DOMParser();
-    const xmldoc = parser.parseFromString(jobXml, "application/xml");
+function updateJob(jobId) {
+    let job = jobsList.getJob(jobId);
+    if (!job) return;
 
-    let id = xmldoc.evaluate("//ns:job/@id", xmldoc.documentElement, nsResolver, XPathExpression.ANY_TYPE, null).iterateNext().nodeValue;
-    
     // see if this job exists in our UI yet
-    let res = tabs.getTabAndTabPanel(id);
+    let res = tabs.getTabAndTabPanel(job.id);
     let tab = res.tab;
     let panel = res.panel;
 
     // if not, create it
     if (!tab || !panel) {
         console.log("Creating tab for job");
-        res = tabs.addTab(id);
+        res = tabs.addTab(job.id);
         tab = res.tab;
         panel = res.panel;
     }
     
-    let status = xmldoc.evaluate("//ns:job/@status", xmldoc.documentElement, nsResolver, XPathExpression.ANY_TYPE, null).iterateNext().nodeValue;
-    let name = xmldoc.evaluate("//ns:script/ns:nicename/text()", xmldoc.documentElement, nsResolver, XPathExpression.ANY_TYPE, null).iterateNext().nodeValue;
-    
-    let result = status == "SUCCESS" ? 
-        xmldoc.evaluate("//ns:result[@file]/@file", xmldoc.documentElement, nsResolver, XPathExpression.ANY_TYPE, null).iterateNext().nodeValue
-        : 
-        "Not available";
-    let messagesIt = xmldoc.evaluate("//ns:message/@content", xmldoc.documentElement, nsResolver, XPathEvaluator.ANY_TYPE, null);
-    let msg = messagesIt.iterateNext();
-    let messages = [];
-    while (msg) {
-        messages.push(msg.nodeValue);
-        msg = messagesIt.iterateNext();
-    }
-    
     tab.innerHTML = `
-    <span class="job-name">${name}</span>
-    <span class="job-status ${status}">${status.toLowerCase()}</span>`;
+    <div class="tab-contents">
+        <span class="job-name">${job.scriptName}</span>
+        <span class="job-status ${job.status}">${job.status.toLowerCase()}</span>
+    </div>
+    ${job.status != 'RUNNING' ? `<button class="close-tab" title="Close tab">x</button>` : ``}`;
 
     panel.innerHTML = `
-    <h2>${name}</h2>
+    <h2>${job.scriptName}</h2>
     <ul class="status">
         <li>
             <span>ID</span>
-            <span>${id}</span>
+            <span>${job.id}</span>
         </li>
         <li>
             <span>Status</span>
-            <span>${status}</span>
+            <span class="job-status ${job.status}">${job.status}</span>
         </li>
         <li>
             <span>Result</span>
-            <span>${result}</span>
+            <span>${job.result}</span>
         </li>
     </ul>
     
-    ${status != 'RUNNING' ? `<button class="delete-job">Delete job</button>` : ``}
+    ${job.status != 'RUNNING' ? `<button class="delete-job">Delete job</button>` : ``}
 
     <div role="region" aria-labelledby="messages" tabindex="0" class="messages-container">
         <h3>Messages</h3>
 
         <ul class="messages">
-        ${messages.map(m => `<li>${m}</li>`).join('')}
+        ${job.messages.map(m => `<li>${m}</li>`).join('')}
         </ul>
     </div>
     `;
 
-    if (status != 'RUNNING') {
-        panel.querySelector("button.delete-job").addEventListener('click', async e => {
-            await deleteJobFn(id);
+    let closeTab = t => {
+        // close tab t and focus on the next tab
+        let nextTab = t.nextElementSibling;
+        if (!nextTab) {
+            nextTab = t.previousElementSibling;
+        }
+        t.remove();
+        panel.remove();
+        console.log("closing tab, selecting next", nextTab);
+        tabs.selectTab(nextTab);
+    };
 
-            // focus on the next tab
-            let nextTab = tab.nextElementSibling;
-            if (!nextTab) {
-                nextTab = document.querySelector("#start");
-            }
-            tab.remove();
-            panel.remove();
-            tabs.selectTab(nextTab);
+    if (job.status != 'RUNNING') {
+        panel.querySelector("button.delete-job").addEventListener('click', async e => {
+            jobsList.removeJob(job.id);
+            closeTab(tab);
+        });
+        tab.querySelector("button.close-tab").addEventListener('click', e => {
+            closeTab(tab);
+            jobsList.updateJobDisplayed(job.id, false);
+            e.stopPropagation(); 
         });
     }
+    
 }
 
 function getStatusFromPanel(panel) {
