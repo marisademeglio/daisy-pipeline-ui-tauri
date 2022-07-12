@@ -36,7 +36,7 @@ header h1 {
     padding: 0;
     margin-bottom: 0;
 }
-li[role=tab] {
+[role=tab] {
     font-size: 65%;
     width: 10rem;
     height: 5rem;
@@ -51,21 +51,21 @@ li[role=tab] {
     gap: .25rem;
     
 }   
-li[role=tab] button {
+[role=tab] .tab-contents {
     border: none;
     background-color: transparent;
 }
-li[role=tab] button.close-tab {
+/* [role=tab] button.close-tab {
     align-self: top;
 }
-li[role=tab] button.close-tab:hover {
+[role=tab] button.close-tab:hover {
     background-color: lightgray;
-}
-li[role=tab] .tab-contents {
+} */
+[role=tab] .tab-contents {
     text-align: center;
     padding: .5rem;
 }
-li[role=tab][aria-selected=true] {
+[role=tab][aria-selected=true] {
     background-color: transparent;
     cursor: default;
     border: thin darkgray solid;
@@ -74,16 +74,16 @@ li[role=tab][aria-selected=true] {
     margin-bottom: -1px;
 }
 
-li[role=tab][aria-selected=false] .tab-contents:hover {
+[role=tab][aria-selected=false] .tab-contents:hover {
     text-decoration: underline;
     text-decoration-thickness: 4px;
     color: var(--selected-hover);
 }
-li[role=tab] span {
+[role=tab] span {
     font-size: 1rem;
     display: block;
 }
-li[role=tab] span.job-status {
+[role=tab] span.job-status {
     font-style: italic;
     font-variant: small-caps;
 }

@@ -40,10 +40,10 @@ function updateJob(jobId) {
     }
     
     tab.innerHTML = `
-    <button class="tab-contents">
+    <div class="tab-contents">
         <span class="job-name">${job.scriptName}</span>
         <span class="job-status ${job.status}">${job.status.toLowerCase()}</span>
-    </button>`;
+    </div>`;
     // this is preferable to the "close tab" button in the tab's panel
     // but it doesn't seem accessible
     // ${job.status != 'RUNNING' ? `<button class="close-tab" title="Close tab">x</button>` : ``}`;

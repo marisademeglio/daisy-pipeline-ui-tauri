@@ -1,8 +1,8 @@
 // this all assumes there's one row of tabs and they are all part of the same set
 // we could have multiple sets of tabs (maybe?) and if so, adjustments are required here
 
-let getAllTabs = () => Array.from(document.querySelectorAll("li[role=tab]"));
-let getAllTabPanels = () => Array.from(document.querySelectorAll("div[role=tabpanel]"));
+let getAllTabs = () => Array.from(document.querySelectorAll("[role=tab]"));
+let getAllTabPanels = () => Array.from(document.querySelectorAll("[role=tabpanel]"));
 
 // select one tab and deselect all the others
 function selectTab(tabElement) {
@@ -21,7 +21,7 @@ function selectTab(tabElement) {
 }
 
 function addTab(id) {
-    let tabElement = document.createElement("li");
+    let tabElement = document.createElement("button");
     tabElement.setAttribute("id", `job-${id}`);
     tabElement.setAttribute("tab-index", "0");
     tabElement.setAttribute("aria-selected", "false");
@@ -44,7 +44,7 @@ function addTab(id) {
 
 function getTabAndTabPanel(jobid) {
     // first get the tab for the job
-    let tab = document.querySelector(`li[role=tab][data-jobid='${jobid}']`);
+    let tab = document.querySelector(`[role=tab][data-jobid='${jobid}']`);
     // then get the panel that is labelled by that tab
     if (tab) {
         let panel = document.querySelector(`div[role=tabpanel][aria-labelledby='${tab.id}']`)
