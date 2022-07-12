@@ -71,7 +71,8 @@ header h1 {
     border: thin darkgray solid;
     color: var(--selected);
     border-bottom: thin #fff solid;
-    margin-bottom: -1px;
+    position: relative;
+    top: 1px;
 }
 
 [role=tab][aria-selected=false] .tab-contents:hover {
