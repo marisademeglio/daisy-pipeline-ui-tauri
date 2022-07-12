@@ -1,7 +1,7 @@
 {
   "name": "tauri-app",
   "scripts": {
-    "serve-ui": "live-server public --port=5555 --no-browser --cors localhost",
+    "serve-ui": "live-server docs --port=5555 --no-browser --cors localhost",
     "dev": "tauri dev",
     "update": "tauri deps update",
     "build": "tauri build"

@@ -4,7 +4,7 @@
     "version": "0.1.0"
   },
   "build": {
-    "distDir": "../public",
+    "distDir": "../docs",
     "devPath": "http://localhost:5555",
     "beforeDevCommand": "npm run serve-ui",
     "beforeBuildCommand": "",
