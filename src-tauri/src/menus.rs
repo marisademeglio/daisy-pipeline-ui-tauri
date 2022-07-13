@@ -1,5 +1,4 @@
-use tauri::{AppHandle, CustomMenuItem, Menu, Submenu, State};
-use minidom::Element;
+use tauri::{AppHandle, CustomMenuItem, Menu, Submenu};
 
 pub struct JobMenuItem {
     id: String,
@@ -24,8 +23,12 @@ pub fn build_menu(history_list: Option<Vec<JobMenuItem>>) -> Menu {
 
     let history_submenu = Submenu::new("History", history_submenu_contents);
 
+    let mut view_jobs_window = CustomMenuItem::new("view_jobs_window".to_string(), "Jobs");
+    let view_submenu = Submenu::new("View", Menu::new().add_item(view_jobs_window));
+
     let menu = Menu::new()
         .add_submenu(app_submenu)
+        .add_submenu(view_submenu)
         // .add_submenu(history_submenu)
         ;
     return menu;

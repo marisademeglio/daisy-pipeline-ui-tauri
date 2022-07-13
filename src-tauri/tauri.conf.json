@@ -1,7 +1,7 @@
 {
   "package": {
     "productName": "daisy-pipeline-prototype-tauri",
-    "version": "0.2.0-mockup"
+    "version": "0.3.0"
   },
   "build": {
     "distDir": "../docs",
@@ -48,7 +48,10 @@
       "active": false
     },
     "allowlist": {
-      "all": true
+      "all": true,
+      "notification": {
+        "all": true
+      }
     },
     "windows": [
       {
@@ -58,6 +61,17 @@
         "resizable": true,
         "fullscreen": false,
         "visible": true
+      },
+
+      {
+        "title": "DAISY Pipeline Jobs",
+        "width": 500,
+        "height": 500,
+        "resizable": true,
+        "fullscreen": false,
+        "visible": true,
+        "url": "jobs.html",
+        "label": "jobs"
       }
     ],
     "security": {

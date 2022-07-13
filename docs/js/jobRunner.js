@@ -9,11 +9,11 @@ function runJob(job) {
     w.onmessage = async e => {
         if (e.data.id == "JOB_DONE") {
             jobsList.updateJobStatus(job.id, "SUCCESS");
-            jobsDisplay.update();
+            await jobsDisplay.update();
         }
         else if (e.data.id == "JOB_MESSAGE") {
             jobsList.addMessageToJob(job.id, e.data.msg);
-            jobsDisplay.update();
+            await jobsDisplay.update();
         }
     };
     window.onbeforeunload = e => {

@@ -1,26 +1,42 @@
 import * as tabs from './tabs.js';
 import * as jobsList from './jobsList.js';
+//import { isPermissionGranted, requestPermission, sendNotification } from '@tauri-apps/api/notification';
 
-function update() {
+async function update() {
     console.log("update");
     let jobsData = jobsList.getJobs();
     console.log(jobsData);
-    jobsData.filter(job => job.displayed).map(job => {
-        let status = job.status;
-        let res = tabs.getTabAndTabPanel(job.id);
-        let panel = res.panel;
-        let currentStatus = getStatusFromPanel(panel); // get the currently-displayed status
-        if (status != "RUNNING" && status == currentStatus) {
-            console.log("No change in job data, no need to update UI");
-        }
-        else {
-            updateJob(job.id);
-        }
-        if (currentStatus != status && currentStatus != "") {
-            console.log("Status change");
-            window.__TAURI__.notification.sendNotification({title: `Pipeline`, body: `${job.scriptName}: ${status}`});
-        }
-    });
+    await Promise.all(jobsData
+        .filter(job => job.displayed)
+        .map(async job => {
+        
+            let status = job.status;
+            let res = tabs.getTabAndTabPanel(job.id);
+            let panel = res.panel;
+            let currentStatus = getStatusFromPanel(panel); // get the currently-displayed status
+            if (status != "RUNNING" && status == currentStatus) {
+                console.log("No change in job data, no need to update UI");
+            }
+            else {
+                updateJob(job.id);
+            }
+            if (currentStatus != status && currentStatus != "") {
+                console.log("Status change");
+                //window.__TAURI__.notification.sendNotification({title: `Pipeline`, body: `${job.scriptName}: ${status}`});
+                let permissionGranted = await window.__TAURI__.notification.isPermissionGranted();
+                if (!permissionGranted) {
+                    const permission = await window.__TAURI__.notification.requestPermission();
+                    permissionGranted = permission === 'granted';
+                }
+                if (permissionGranted) {
+                    alert("permission granted");
+                    const permission = await window.__TAURI__.notification.sendNotification({title: `Pipeline`, body: `${job.scriptName}: ${status}`});
+                }
+                else {
+                    alert("Permission not granted");
+                }
+            }
+        }));
 }
 function updateJob(jobId) {
     let job = jobsList.getJob(jobId);

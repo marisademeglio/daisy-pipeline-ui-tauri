@@ -3,13 +3,12 @@
     windows_subsystem = "windows"
 )]
 
-use std::{env, thread, time};
+use std::{env};
 use dotenv;
 use tauri::{
     Manager,
-    RunEvent, WindowEvent
+    Event, RunEvent, WindowEvent
   };
-
 mod menus;
 
 fn main() {
@@ -29,6 +28,20 @@ fn main() {
                     // let window = event.window().clone();
                     // let _ = window.emit("goto-tab", "start".to_string());
                 },
+                "view_jobs_window" => {
+                    if let jobs_window = event.window().app_handle().get_window("jobs").unwrap() {
+                        if jobs_window.is_visible().unwrap() {
+                            jobs_window.hide();
+                        }
+                        else {
+                            jobs_window.show();
+                        }
+                    }
+                    else {
+                        println!("Jobs window error");
+                    }
+                    
+                },
                 _ => {println!("Menu {}", event.menu_item_id())}
             }
         })
@@ -47,15 +60,23 @@ fn main() {
         // Triggered when a window is trying to close
         RunEvent::WindowEvent {
             label,
-            event: WindowEvent::CloseRequested { api: _, .. },
+            event: WindowEvent::CloseRequested { api, .. },
             ..
         } => {
-            println!("WindowEvent::CloseRequested");
-            let app_handle = app_handle.clone();
-            let _window = app_handle.get_window(&label).unwrap();
-            tauri::async_runtime::spawn(async move {
-                do_exit(app_handle).await;
-            });
+            if label == "main" {
+                println!("WindowEvent::CloseRequested");
+                let app_handle = app_handle.clone();
+                let _window = app_handle.get_window(&label).unwrap();
+                tauri::async_runtime::spawn(async move {
+                    do_exit(app_handle).await;
+                });
+            }
+            else if label == "jobs" {
+                let app_handle = app_handle.clone();
+                let window = app_handle.get_window(&label).unwrap();
+                window.hide().unwrap();
+                api.prevent_close();
+            }
         }
 
         _ => {}

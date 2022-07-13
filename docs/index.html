@@ -56,14 +56,15 @@
     import * as jobsList from './js/jobsList.js';
     import * as jobRunner from './js/jobRunner.js';
 
-    jobsDisplay.update();
+(async () => {
+    await jobsDisplay.update();
     
     document.querySelector("#run-job").addEventListener('click', async e => {
         // create a new job
         let scriptName = Array.from(document.querySelectorAll("#script-name option")).find(opt => opt.selected).textContent;
         let newJob = jobsList.addJob(scriptName);
         jobRunner.runJob(newJob);
-        jobsDisplay.update();
+        await jobsDisplay.update();
         window.__TAURI__.invoke('update_menu', {jobs: JSON.stringify(jobsList.getJobs())});
     });
 
@@ -78,7 +79,7 @@
         let res = tabs.getTabAndTabPanel(e.payload);
         tabs.selectTab(res.tab);
     });
-
+})();
 </script>
 
 </html>

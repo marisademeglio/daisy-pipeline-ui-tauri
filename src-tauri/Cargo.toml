@@ -20,8 +20,6 @@ serde = { version = "1.0", features = ["derive"] }
 tauri = { version = "1.0.3", features = ["api-all"] }
 dotenv = "0.15.0"
 reqwest = { version = "0.11.10", features = ["blocking", "multipart"] }
-minidom = "0.14.0"
-uuid = "1.1.1"
 
 
 
