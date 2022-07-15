@@ -7,15 +7,20 @@ use std::{env};
 use dotenv;
 use tauri::{
     Manager,
-    Event, RunEvent, WindowEvent
+    RunEvent, WindowEvent
   };
+use tauri::{SystemTray, SystemTrayEvent};
 mod menus;
 
 fn main() {
     dotenv::dotenv().ok();
     let menu = menus::build_menu(None);
+    let system_tray_menu = menus::build_system_tray_menu();
+    let system_tray = SystemTray::new().with_menu(system_tray_menu);
+
     let app = tauri::Builder::default()
         .menu(menu)
+        .system_tray(system_tray)
         .on_menu_event(|event| {
             match event.menu_item_id() {
                 "custom_quit" => {
@@ -29,21 +34,27 @@ fn main() {
                     // let _ = window.emit("goto-tab", "start".to_string());
                 },
                 "view_jobs_window" => {
-                    if let jobs_window = event.window().app_handle().get_window("jobs").unwrap() {
-                        if jobs_window.is_visible().unwrap() {
-                            jobs_window.hide();
-                        }
-                        else {
-                            jobs_window.show();
-                        }
+                    let jobs_window = event.window().app_handle().get_window("jobs").unwrap();
+                    if jobs_window.is_visible().unwrap() {
+                        jobs_window.hide();
                     }
                     else {
-                        println!("Jobs window error");
+                        jobs_window.show();
                     }
-                    
                 },
                 _ => {println!("Menu {}", event.menu_item_id())}
             }
+        })
+        .on_system_tray_event(|app, event| match event {
+            SystemTrayEvent::MenuItemClick { id, .. } => {
+                match id.as_str() {
+                "custom_quit" => {
+                    app.exit(0);
+                }
+                _ => {}
+                }
+            }
+            _ => {}
         })
         .invoke_handler(tauri::generate_handler![
             update_menu

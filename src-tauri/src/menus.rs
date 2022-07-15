@@ -1,4 +1,5 @@
 use tauri::{AppHandle, CustomMenuItem, Menu, Submenu};
+use tauri::{SystemTrayMenu, SystemTrayMenuItem};
 
 pub struct JobMenuItem {
     id: String,
@@ -56,4 +57,11 @@ pub fn update_menus(jobs: String, app_handle: AppHandle) {
     // let main_window = app_handle.get_window("main").unwrap();
     //   let menu_handle = main_window.menu_handle();
     
+}
+
+pub fn build_system_tray_menu() -> SystemTrayMenu {
+    let quit = CustomMenuItem::new("custom_quit".to_string(), "Quit DAISY Pipeline");
+    let tray_menu = SystemTrayMenu::new()
+        .add_item(quit);
+    return tray_menu;
 }

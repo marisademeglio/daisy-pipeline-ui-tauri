@@ -29,11 +29,11 @@ async function update() {
                     permissionGranted = permission === 'granted';
                 }
                 if (permissionGranted) {
-                    alert("permission granted");
+                    // alert("permission granted");
                     const permission = await window.__TAURI__.notification.sendNotification({title: `Pipeline`, body: `${job.scriptName}: ${status}`});
                 }
                 else {
-                    alert("Permission not granted");
+                    // alert("Permission not granted");
                 }
             }
         }));
